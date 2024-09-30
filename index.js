@@ -197,7 +197,88 @@ try{
 		}
 		if (update.connection == "open" || update.receivedPendingNotifications == "true") {
    
-      
+      const app = express();
+      app.use(express.json());
+
+      // Middleware untuk parsing URL-encoded data
+      app.use(express.urlencoded({
+        extended: true
+      }));
+      const port = 3200;
+      app.use(express.static(path.join(__dirname, 'public')));
+      app.get('/', (req, res) => {
+        res.status(200).json({
+          message: 'Welcome To My Bot'
+        });
+      });
+      // Route untuk mengirim pesan ke nomor WhatsApp
+      app.post('/send-message', (req, res) => {
+        const {
+          nomor,
+          pesan
+        } = req.body;
+
+        if (!nomor || !pesan) {
+          return res.status(400).json({
+            message: 'Nomor dan pesan harus disertakan.'
+          });
+        }
+        NanoBotz.sendMessage(nomor + "@s.whatsapp.net", {
+          text: pesan
+        });
+        // Logika untuk mengirim pesan WhatsApp
+        // Misalnya, Anda bisa mengintegrasikan Twilio, WhatsApp API, atau layanan serupa di sini
+        console.log(`Mengirim pesan ke ${nomor}: ${pesan}`);
+
+        // Respons sukses
+        return res.status(200).json({
+          status: 'success',
+          message: `Pesan terkirim ke nomor ${nomor}`,
+        });
+      });
+      async function sendEditMessages(message, response) {
+        await NanoBotz.sendMessage(from, {
+          text: response,
+          edit: message
+        });
+      }
+      app.post('/webhook', (req, res) => {
+        const {
+          transaction,
+          sisaSaldo
+        } = req.body;
+
+        if (!nomor || !pesan) {
+          return res.status(400).json({
+            message: 'Nomor dan pesan harus disertakan.'
+          });
+        }
+        sendEditMessages(transaction.m_key, `\` *INVOICE TRANSAKSI* \`
+
+🆔 *Transaction ID*: ${transaction.trx_id}
+📝 *Ref ID*: ${transaction.ref_id}
+📦 *Produk*: ${transaction.produk}
+💵 *Harga*: ${formatRupiah(transaction.harga)}
+📅 *Tanggal*: ${new Date(transaction.createdAt).toLocaleDateString()}  
+⏰ *Waktu*: ${new Date(transaction.createdAt).toLocaleTimeString()}
+
+📊 *Status*: \`${transaction.status}⏳\`
+
+🔄 *Saldo Tersisa*: ${formatRupiah(sisaSaldo)}
+
+Terima kasih telah bertransaksi dengan kami! Jika ada pertanyaan, silakan hubungi kami.
+📞 *CS*: ${owner}`);
+
+        return res.status(200).json({
+          status: 'success',
+          message: `Pesan terkirim`,
+        });
+      });
+
+      app.listen(port, () => {
+        console.log(chalk.black(chalk.bgWhite(`🔎 Server runnin on port : ${port}`)));
+      });
+
        NanoBotz.sendMessage(owner + "@s.whatsapp.net", {
          text: `*Bot started!*`
        });
@@ -228,88 +309,7 @@ cfonts.say(`${botname}`, {
 	}
 	
 })
- const app = express();
-            app.use(express.json());
-
-            // Middleware untuk parsing URL-encoded data
-            app.use(express.urlencoded({
-                extended: true
-            }));
-  const port = 4000;
-  app.use(express.static(path.join(__dirname, 'public')));
-  app.get('/', (req, res) => {
-	res.status(200).json({
-		message: 'Welcome To My Bot'
-	});
-});
-	// Route untuk mengirim pesan ke nomor WhatsApp
-	app.post('/send-message', (req, res) => {
-		const {
-			nomor,
-			pesan
-		} = req.body;
-
-		if (!nomor || !pesan) {
-			return res.status(400).json({
-				message: 'Nomor dan pesan harus disertakan.'
-			});
-		}
-		 NanoBotz.sendMessage(nomor + "@s.whatsapp.net", {
-			text: pesan
-		});
-		// Logika untuk mengirim pesan WhatsApp
-		// Misalnya, Anda bisa mengintegrasikan Twilio, WhatsApp API, atau layanan serupa di sini
-		console.log(`Mengirim pesan ke ${nomor}: ${pesan}`);
-
-		// Respons sukses
-		return res.status(200).json({
-			status: 'success',
-			message: `Pesan terkirim ke nomor ${nomor}`,
-		});
-	});
-async function sendEditMessages(message, response) {
-            await NanoBotz.sendMessage(from, {
-                text: response,
-                edit: message
-            });
-        }
-  app.post('/webhook', (req, res) => {
-		const {
-			transaction,
-      sisaSaldo
-		} = req.body;
-
-		if (!nomor || !pesan) {
-			return res.status(400).json({
-				message: 'Nomor dan pesan harus disertakan.'
-			});
-		}
-		 sendEditMessages(transaction.m_key, `\` *INVOICE TRANSAKSI* \`
-
-🆔 *Transaction ID*: ${transaction.trx_id}
-📝 *Ref ID*: ${transaction.ref_id}
-📦 *Produk*: ${transaction.produk}
-💵 *Harga*: ${formatRupiah(transaction.harga)}
-📅 *Tanggal*: ${new Date(transaction.createdAt).toLocaleDateString()}  
-⏰ *Waktu*: ${new Date(transaction.createdAt).toLocaleTimeString()}
-
-📊 *Status*: \`${transaction.status}⏳\`
-
-🔄 *Saldo Tersisa*: ${formatRupiah(sisaSaldo)}
-
-Terima kasih telah bertransaksi dengan kami! Jika ada pertanyaan, silakan hubungi kami.
-📞 *CS*: ${owner}`);
-		
-		return res.status(200).json({
-			status: 'success',
-			message: `Pesan terkirim`,
-		});
-	});
-
- app.listen(port, () => {
-                console.log(chalk.black(chalk.bgWhite(`🔎 Server runnin on port : ${port}`)));
-            });
-
+ 
 
 start('2',colors.bold.white('\n\nMenunggu Pesan Baru..'))
 

@@ -142,5 +142,21 @@
       }
     ],
     "role": "model"
+  },
+  {
+    "role": "user",
+    "parts": [
+      {
+        "text": "halo halo"
+      }
+    ]
+  },
+  {
+    "parts": [
+      {
+        "text": "Halo halo juga! 😊😊 \n\nWah, sepertinya semangatmu sedang berlipat ganda hari ini! 😄 Ada apa gerangan? Ceritakan padaku, aku siap mendengarkan. 😉 \n"
+      }
+    ],
+    "role": "model"
   }
 ]
