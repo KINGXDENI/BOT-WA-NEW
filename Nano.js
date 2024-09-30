@@ -2792,7 +2792,7 @@ if(from in NanoBotz.tebaklirik){
 const similarity = require('similarity')
 const threshold = 0.72
 let id = m.chat
-let users = global.db.users[m.sender]
+  let user = global.db.users[m.sender]
 let json = JSON.parse(JSON.stringify(NanoBotz.tebaklirik[id][1]))
 
  if (budy.toLowerCase() == json.jawaban.toLowerCase().trim()) {
