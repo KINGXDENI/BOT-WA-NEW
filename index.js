@@ -236,24 +236,41 @@ try{
           message: `Pesan terkirim ke nomor ${nomor}`,
         });
       });
-      async function sendEditMessages(message, response) {
-        await NanoBotz.sendMessage(from, {
-          text: response,
-          edit: message
-        });
-      }
-      app.post('/webhook', (req, res) => {
+      
+    
+      
+      app.post('/webhook', async(req, res) => {
         const {
           transaction,
           sisaSaldo
         } = req.body;
-
-        if (!nomor || !pesan) {
-          return res.status(400).json({
-            message: 'Nomor dan pesan harus disertakan.'
+        async function sendEditMessages(message, response) {
+          await NanoBotz.sendMessage(transaction.m_key.remoteJid, {
+            text: response,
+            edit: message
           });
         }
-        sendEditMessages(transaction.m_key, `\` *INVOICE TRANSAKSI* \`
+
+        function formatRupiah(number) {
+          return new Intl.NumberFormat("id", {
+            style: "currency",
+            currency: "IDR",
+            maximumFractionDigits: 0 // Menghilangkan desimal
+          }).format(number);
+        }
+        let emot = ''
+        let textemot =''
+        if(transaction.status== 'sukses'){
+          textemot = '*SUKSES*'
+          emot ='✅'
+        } else if (transaction.status == 'gagal') {
+            textemot = '*GAGAL*'
+          emot ='❌'
+        } else if (transaction.status == 'pending') {
+            textemot = '*PENDING*'
+          emot = '⏳'
+        }
+        await sendEditMessages(transaction.m_key, `\` *INVOICE TRANSAKSI* \`
 
 🆔 *Transaction ID*: ${transaction.trx_id}
 📝 *Ref ID*: ${transaction.ref_id}
@@ -262,12 +279,14 @@ try{
 📅 *Tanggal*: ${new Date(transaction.createdAt).toLocaleDateString()}  
 ⏰ *Waktu*: ${new Date(transaction.createdAt).toLocaleTimeString()}
 
-📊 *Status*: \`${transaction.status}⏳\`
+📊* Status *: \`${textemot}${emot}\`
 
-🔄 *Saldo Tersisa*: ${formatRupiah(sisaSaldo)}
+🔄 *Saldo*: ${formatRupiah(sisaSaldo)}
 
+📄 *SN*: ${transaction.sn}
 Terima kasih telah bertransaksi dengan kami! Jika ada pertanyaan, silakan hubungi kami.
 📞 *CS*: ${owner}`);
+console.log('succses terkirim');
 
         return res.status(200).json({
           status: 'success',

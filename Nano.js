@@ -16,7 +16,8 @@ const primbon = new Primbon()
 const { getTokovoucherSaldo } = require('./lib/DIBOSTORE/tokovoucher.js');
 const { cekSaldoByNomor,  addSaldoByNomor,
     hapusSaldoByNomor,sendNomorToPulsa,  getUserByNomor,
-    TransaksiPulsa } = require('./lib/DIBOSTORE/reseller.js');
+    TransaksiPulsa, getProdukPLN
+    } = require('./lib/DIBOSTORE/reseller.js');
 const GeminiAI = require('./lib/DIBO/GeminiDibo.js');
 const Groqs = require('./lib/DIBO/Groq.js');
 const WhisperHug = require('./lib/DIBO/WhisperHug.js');
@@ -30714,6 +30715,18 @@ case 'topupdibo': {
      
 TransaksiPulsa(nomor,kode,notujuan,key)
                     .then(result => {
+                      let emot = ''
+                      let textemot = ''
+                      if (result.transaction.status == 'sukses') {
+                        textemot = '*SUKSES*'
+                        emot = '✅'
+                      } else if (result.transaction.status == 'gagal') {
+                        textemot = '*GAGAL*'
+                        emot = '❌'
+                      } else if (result.transaction.status == 'pending') {
+                        textemot = '*PENDING*'
+                        emot = '⏳'
+                      }
                        sendEditMessages(key, `\` *INVOICE TRANSAKSI* \`
 
 🆔 *Transaction ID*: ${result.transaction.trx_id}
@@ -30723,11 +30736,12 @@ TransaksiPulsa(nomor,kode,notujuan,key)
 📅 *Tanggal*: ${new Date(result.transaction.createdAt).toLocaleDateString()}  
 ⏰ *Waktu*: ${new Date(result.transaction.createdAt).toLocaleTimeString()}
 
-📊 *Status*: \`${result.transaction.status}⏳\`
+📊 *Status*: \`${textemot}${emot}\`
 
 🔄 *Saldo Tersisa*: ${formatRupiah(result.sisaSaldo)}
 
-Terima kasih telah bertransaksi dengan kami! Jika ada pertanyaan, silakan hubungi kami.
+🔔 *Mohon ditunggu, transaksi Anda sedang diproses!Kami akan segera memberi tahu Anda setelah selesai.*
+
 📞 *CS*: ${owner}`);
                        
                     })
@@ -30793,28 +30807,81 @@ let produk = result.produk
         });
 }
 break
-  case 'tests': {
-      NanoBotz.sendMessage(m.chat, {
-                                  text: "test",
-                                   react: {
-                                       text: "⏱️",
-                                       key: m.key,
-                                   }
-                                 
-                               })
-           
+case 'topuplistrik': {
+  if (!text) return reply('Masukan Nomornya')
+  let result = await getProdukPLN(text)
+  let data = result.kategori
+  let produk = result.produk
+  let caption = produk.map((v, i) => {
+    return {
+      header: v.nama,
+      title: 'Harga: ' + formatRupiah(v.harga),
+      description: `Beli ${v.nama}`,
+      id: '.topupdibo ' + `${text}|${v.kode}`
+    }
+  })
+  let msg = generateWAMessageFromContent(m.chat, {
+    viewOnceMessage: {
+      message: {
+        messageContextInfo: {
+          deviceListMetadata: {},
+          deviceListMetadataVersion: 2
+        },
+        interactiveMessage: {
+          body: {
+            text: `🔎 Berikut adalah daftar produk PLN\nSilahkan Pilih Produk dibawah ini`,
+          },
 
-                               console.log(key)
-             sendEditMessages(key, "*Gagal*");
-
-                               NanoBotz.sendMessage(m.chat, {
-                                   react: {
-                                       text: "📣",
-                                       key: m.key,
-                                   }
-                                 
-                               })
+          header: proto.Message.InteractiveMessage.Header.create({
+            ...(await prepareWAMessageMedia({
+              image: await getBuffer(data.foto)
+            }, {
+              upload: NanoBotz.waUploadToServer
+            })),
+            title: ``,
+            gifPlayback: true,
+            subtitle: ownername,
+            hasMediaAttachment: false
+          }),
+          nativeFlowMessage: {
+            buttons: [{
+              name: "single_select",
+              buttonParamsJson: JSON.stringify({
+                title: "CLICK HERE",
+                sections: [{
+                  title: "",
+                  rows: caption
+                }]
+              })
+            }]
+          }
         }
+      }
+    }
+  }, {
+    quoted: m
+  }, {});
+  await NanoBotz.relayMessage(msg.key.remoteJid, msg.message, {
+    messageId: msg.key.id
+  });
+}
+break
+  case 'tests': {
+    let {
+      key
+    } = await NanoBotz.sendMessage(m.chat, {
+       text: "test",
+
+
+     })
+
+     await NanoBotz.sendMessage(m.chat, {
+       text: 'tessssss',
+       edit: key
+     });
+     
+           
+    }
         break
 default:
 
