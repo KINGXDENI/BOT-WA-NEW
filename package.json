@@ -1,5 +1,5 @@
 {
-  "name": "Cheems-Bot-MD",
+  "name": "bot-wa-new",
   "version": "8.0.0",
   "description": "Automated whatsapp md bot created using nodejs and baileys lib",
   "main": "index.js",
@@ -18,7 +18,7 @@
     "bot-md",
     "multi-device"
   ],
-  "author": "DGXeon",
+  "author": "KINGXDEN",
   "license": "ISC",
   "dependencies": {
     "@adiwajshing/keyed-db": "^0.2.4",
