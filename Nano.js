@@ -75,6 +75,7 @@ const chatnano = JSON.parse(fs.readFileSync('./database/chatnano.json'))
 const { isSetProses, addSetProses, removeSetProses, changeSetProses, getTextSetProses } = require('./lib/setproses');
 const { addResponList, delResponList, isAlreadyResponList, isAlreadyResponListGroup, sendResponList, updateResponList, getDataResponList } = require('./lib/respon-list');
 const { isSetDone, addSetDone, removeSetDone, changeSetDone, getTextSetDone } = require('./lib/setdone');
+const { diboLyrics } = require('./lib/DIBO/Lirik.js')
 let autosticker = JSON.parse(fs.readFileSync('./database/autosticker.json'))
 let mute = JSON.parse(fs.readFileSync('./database/mute.json'));
 let ntnsfw = JSON.parse(fs.readFileSync('./database/nsfw.json'))
@@ -567,7 +568,7 @@ if (!isAdmins && !DanzTheCreator) return
 }
 
 
-if (!NanoBotz.public) {
+if (!NanoBotz.public && !DanzTheCreator) {
 if (!m.key.fromMe) return
 }
 
@@ -26819,7 +26820,7 @@ NanoBotz.sendMessage(m.chat, { image : eek, caption: ngen }, { quoted: m})
 }
 break
 case 'play': case 'songs': {
- reply(mess.wait)
+
 let yts = require("yt-search")
 if (!text) return m.reply('*PERMINTAAN ERROR!! CONTOH :*\n> *.ytmp3 <link youtube>*')
 try {
@@ -26827,7 +26828,8 @@ let search = await yts(text);
 let anup3k = search.videos[0];
 let { title, thumbnail, timestamp, views, ago, url } = anup3k;
 let procees = await (await fetch(`https://widipe.com/download/ytdl?url=${url}`)).json()
-             
+    let lirik = await diboLyrics(text, '', 'youtube')
+
   await NanoBotz.sendMessage(m.chat, {
     audio: {
       url: procees.result.mp3
@@ -26847,6 +26849,9 @@ let procees = await (await fetch(`https://widipe.com/download/ytdl?url=${url}`))
   }, {
     quoted: m
   });
+   await NanoBotz.sendMessage(m.chat, {
+     text: `*\`[ LIRIK ]\`*\n${lirik}`
+   })
  
 } catch (e) {
     reply('*terjadi error :*' + e)
@@ -29372,6 +29377,7 @@ break
 case 'spdl': case 'spotifydl': {
 if (!text) return reply('Masukan Link')
 let result = await spotifydl(text)
+let lirik = await diboLyrics(result.title, result.artis)
 // console.log(result)
 // let captionvid = `∘ Title: ${result.title}\n∘ Artist: ${result.artis}\n∘ Type: ${result.type}\n\nSelly-Bot`
 //  const p = await new canvafy.Spotify()
@@ -29402,6 +29408,11 @@ let result = await spotifydl(text)
  }, {
    quoted: m
  });
+
+
+   await NanoBotz.sendMessage(m.chat, {
+     text: `*\`[ LIRIK ]\`*\n${lirik}`
+   })
     //    await NanoBotz.sendMessage(from, { image: p, caption: captionvid }, { quoted: m })
     // NanoBotz.sendMessage(m.chat, { audio: { url: result.download}, mimetype: 'audio/mpeg', filename: 'MP3 BY ' + 'Selly' }, { quoted: m });
 }

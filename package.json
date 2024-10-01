@@ -63,6 +63,7 @@
     "jimp": "^0.16.1",
     "jsdom": "^16.4.0",
     "kirbotz-api": "^0.0.2",
+    "llyrics": "^1.1.7",
     "lowdb": "^2.1.0",
     "mal-scraper": "^2.11.4",
     "mathjs": "^11.3.0",

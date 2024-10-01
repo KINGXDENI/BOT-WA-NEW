@@ -1,34 +1,36 @@
-const fetch = require('node-fetch');
-function getUserByNomor(nomorKontak) {
-    return new Promise((resolve, reject) => {
-        const url = `http://localhost:3000/users/nomor/${nomorKontak}`; // Endpoint for getting user by nomor
+const {
+    find
+} = require('llyrics');
 
-        fetch(url, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'x-api-key': '123Deni' // Include your API key here if needed
+// Function to fetch lyrics using a Promise
+function diboLyrics(songName, artistName = "") {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const response = await find({
+                song: songName,
+                artist: artistName, // Add artist parameter
+                engine: 'musixmatch',
+                forceSearch: true,
+            });
+
+            // Check if lyrics are found
+            if (response && response.lyrics) {
+                resolve(response.lyrics);
+            } else {
+                reject(new Error('Lyrics not found'));
             }
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`Network response was not ok: ${response.statusText}`);
-            }
-            return response.json(); // Parse the JSON from the response
-        })
-        .then(data => {
-            resolve(data); // Resolve with the user data
-        })
-        .catch(error => {
-            reject(`Error: ${error.message}`); // Catch and reject with error message
-        });
+        } catch (error) {
+            reject(error);
+        }
     });
 }
-let nomor = '082144323683'; // Ensure nomorKontak is a string
-getUserByNomor(nomor)
-    .then(saldo => {
-        console.log(saldo);
+
+// Example usage
+diboLyrics('Terima kasih', 'Hal') // Added artist parameter
+    .then(lyrics => {
+        console.log('Lyrics found:');
+        console.log(lyrics);
     })
-    .catch(error => {
-        console.error(error);
+    .catch(err => {
+        console.error('Error fetching lyrics:', err.message);
     });
