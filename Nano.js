@@ -31153,7 +31153,7 @@ default:
                                 sendObj = {
                                     caption: ``,
                                     video: {
-                                        url: data.video1
+                                        url: data.videoSD
                                     }
                                 };
                             }
